@@ -14,4 +14,4 @@ Nothing is installed and nothing is sent anywhere: the optimizer runs in your br
 (Python via [Pyodide](https://pyodide.org)). There is no account, tracking or server.
 
 This repository holds only the built site. Builds score a level-20 teamfight; they are a strong starting point,
-not a guarantee. SMITE 2 is a trademark of Hi-Rez Studios; this is an unofficial fan tool.
+not a guarantee. SMITE 2 and the god portraits are © Hi-Rez Studios (portraits via wiki.smite2.com); this is an unofficial fan tool.
