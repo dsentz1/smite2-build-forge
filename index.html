@@ -88,6 +88,12 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
 .tier { font: 700 11px var(--body); letter-spacing: .06em; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; margin-left: 6px; vertical-align: 2px; color: var(--muted) }
 .tier.t-S, .tier.t-A { color: var(--good); border-color: var(--good) }
 .tier.t-D, .tier.t-F { color: var(--bad); border-color: var(--bad) }
+.key { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: 13.5px }
+.key summary { cursor: pointer; font-weight: 600; color: var(--gold) }
+.key dl { display: grid; gap: 6px; margin: 10px 0 2px }
+.key dl div { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 10px }
+.key dt { font-weight: 600 } .key dd { margin: 0; color: var(--muted) }
+@media (max-width: 480px) { .key dl div { grid-template-columns: minmax(0, 1fr); gap: 0 } }
 .slot .why { font-size: 12.5px; color: var(--muted) }
 .slot .bar { height: 4px; border-radius: 2px; background: var(--line); margin-top: 5px; overflow: hidden }
 .slot .bar i { display: block; height: 100%; background: var(--gold) }
@@ -222,6 +228,8 @@ const state = { map: "conquest", own: [], ban: [], view: "build" };
 const STAT_LABELS = { strength: "Strength", intelligence: "Intelligence", attack_speed_total: "Attack speed", crit_chance: "Crit chance",
   penetration: "Penetration", cooldown_reduction: "Cooldown reduction", lifesteal: "Lifesteal", max_health: "Health",
   max_mana: "Mana", physical_protection: "Physical prot", magical_protection: "Magical prot", plating: "Plating", dampening: "Dampening", echo: "Echo" };
+const KEY_WEIGHTS = { burst: "70% burst, 15% damage/s, 15% survival", dps: "15% burst, 70% damage/s, 15% survival",
+  balanced: "split by role: mages 40/30/30, warriors and guardians 20/20/60", tank: "5% burst, 10% damage/s, 85% survival" };
 const PCT = new Set(["crit_chance", "penetration", "cooldown_reduction", "lifesteal"]);
 const fmtStat = (k, v) => PCT.has(k) ? Math.round(v * 100) + "%" : k === "attack_speed_total" ? v.toFixed(2) + "/s" : Math.round(v).toLocaleString();
 
@@ -332,8 +340,20 @@ function renderBuild(r, isExample) {
       <div class="metric"><span>Burst</span><b>${m.burst.toLocaleString()}</b><span>${m.burst_x_baseline}× no items</span></div>
       <div class="metric"><span>Damage / s</span><b>${m.dps.toLocaleString()}</b><span>${m.dps_x_baseline}× no items</span></div>
       <div class="metric"><span>Effective HP</span><b>${m.ehp.toLocaleString()}</b><span>${m.ehp_x_baseline}× no items</span></div>
-      <div class="metric"><span>Score</span><b>${b.score.toFixed(2)}</b><span>higher is better</span></div>
+      <div class="metric"><span>Score</span><b>${b.score.toFixed(2)}</b><span>vs other builds here</span></div>
     </div>
+    <details class="key" id="score-key">
+      <summary>How to read this build</summary>
+      <dl>
+        <div><dt>Burst</dt><dd>Damage from one full ability rotation plus a few basic attacks, after the target's protections.</dd></div>
+        <div><dt>Damage / s</dt><dd>Sustained damage per second over a 6-second fight.</dd></div>
+        <div><dt>Effective HP</dt><dd>Damage you can take before dying: health, protections and damage reduction against this enemy team, plus healing during the fight.</dd></div>
+        <div><dt>× no items</dt><dd>How many times stronger than the same god at level 20 with no items. 4.0× burst means four times the damage.</dd></div>
+        <div><dt>Score</dt><dd>One number for the whole build: burst, damage and survival combined with weights for the style (this style: ${esc(KEY_WEIGHTS[r.mode] || "")}), adjusted for utility like anti-heal, pro ratings and gold cost. Use it only to compare builds for the same god and match: 5.0 vs 4.8 means the first is about 4% stronger. Scores of different gods are not comparable.</dd></div>
+        <div><dt>Slot bar</dt><dd>How much the build loses if that item is removed. Longer = more important.</dd></div>
+        <div><dt>Tier letter</dt><dd>A top player's rating of the item (Weak3n's tier list): <span class="tier t-S">S</span> best down to <span class="tier t-F">F</span> avoid. Hover a letter for the reason.</dd></div>
+      </dl>
+    </details>
     <dl class="stats">${stats}</dl>
     ${sc.behind ? `<div class="tbl"><table><thead><tr><th>If you are</th><th>Burst</th><th>Damage/s</th><th>Effective HP</th></tr></thead><tbody>
       ${["behind", "even", "ahead"].map((k) => `<tr><td>${k}</td><td>${sc[k].burst.toLocaleString()}</td><td>${sc[k].dps.toLocaleString()}</td><td>${sc[k].ehp.toLocaleString()}</td></tr>`).join("")}
