@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>SMITE 2 Build Forge</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: forge bench — the setup form on the left, the forged build (six numbered slots, in buy order) on the right; one column on phones. */
+:root {
+  --bg: #eef1f3; --panel: #ffffff; --ink: #1a2229; --muted: #5a6772; --line: #d3dae0;
+  --gold: #8a6420; --gold-soft: #f3ead6; --good: #1f7a4d; --bad: #b2402f;
+  --phys: #b5462c; --mag: #2f6fb8; --field: #f7f9fa;
+  --display: "Cinzel", "Trajan Pro", Georgia, serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e1317; --panel: #161d23; --ink: #e6eaee; --muted: #94a2ae; --line: #27323b;
+  --gold: #d7b56d; --gold-soft: #2a2417; --good: #5cc48e; --bad: #ea8571;
+  --phys: #ff7a63; --mag: #4fb3ff; --field: #11171c; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0e1317; --panel: #161d23; --ink: #e6eaee; --muted: #94a2ae; --line: #27323b;
+  --gold: #d7b56d; --gold-soft: #2a2417; --good: #5cc48e; --bad: #ea8571;
+  --phys: #ff7a63; --mag: #4fb3ff; --field: #11171c; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 40px }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 20px }
+header.top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 20px }
+h1 { font: 700 clamp(26px, 4vw, 36px)/1.1 var(--display); letter-spacing: .04em; margin: 0; text-wrap: balance }
+h1 span { color: var(--gold) }
+.sub { color: var(--muted); margin: 0; max-width: 62ch }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line) }
+.tabs button { font: 600 14px var(--body); letter-spacing: .06em; text-transform: uppercase; background: none; color: var(--muted);
+  border: 0; border-bottom: 2px solid transparent; padding: 10px 14px; cursor: pointer; margin-bottom: -1px }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--gold) }
+.bench { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 20px; align-items: start }
+@media (max-width: 860px) { .bench { grid-template-columns: minmax(0, 1fr) } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 14px; min-width: 0 }
+.panel h2 { font: 600 13px var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 }
+label { display: grid; gap: 4px; font-weight: 600; font-size: 13px }
+label small, .hint { font-weight: 400; color: var(--muted); font-size: 12.5px }
+input[type=text], select, input[type=number] { width: 100%; font: 15px var(--body); color: var(--ink); background: var(--field);
+  border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; min-width: 0 }
+input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 6px; overflow: hidden }
+.seg button { font: 600 14px var(--body); background: var(--field); color: var(--muted); border: 0; padding: 8px 4px; cursor: pointer }
+.seg button + button { border-left: 1px solid var(--line) }
+.seg button[aria-pressed="true"] { background: var(--gold-soft); color: var(--ink) }
+.enemies { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px }
+.enemies input { padding: 7px 6px; font-size: 13.5px }
+.check { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13.5px }
+.chips { display: flex; flex-wrap: wrap; gap: 6px }
+.chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; font-size: 13px; background: var(--field) }
+.chip button { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 15px; line-height: 1; padding: 0 }
+.dt-phys { color: var(--phys) } .dt-mag { color: var(--mag) }
+.go { font: 700 15px var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--bg); background: var(--gold);
+  border: 0; border-radius: 6px; padding: 12px; cursor: pointer }
+.go:disabled { opacity: .55; cursor: progress }
+.status { font-size: 13px; color: var(--muted); min-height: 1.5em }
+.status.err { color: var(--bad) }
+.result-head { display: grid; gap: 4px }
+.result-head h2 { font: 700 24px/1.2 var(--display); letter-spacing: .03em; margin: 0; color: var(--ink); text-transform: none }
+.tag { display: inline-block; font: 600 11px var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--gold) }
+.meta-line { color: var(--muted); font-size: 14px }
+.slots { display: grid; gap: 6px; list-style: none; margin: 0; padding: 0 }
+.slot { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--field) }
+.slot .n { font: 700 16px var(--display); color: var(--gold); text-align: center }
+.slot .name { font-weight: 700; overflow-wrap: anywhere }
+.slot .bar { height: 4px; border-radius: 2px; background: var(--line); margin-top: 5px; overflow: hidden }
+.slot .bar i { display: block; height: 100%; background: var(--gold) }
+.slot .gold { font: 500 13px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; text-align: right }
+.slot.starter .n { font-size: 11px; letter-spacing: .08em; font-family: var(--body) }
+.note { font-size: 13.5px; color: var(--muted); border-left: 2px solid var(--gold); padding-left: 10px }
+.metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px }
+@media (max-width: 520px) { .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)) } }
+.metric { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: grid; gap: 2px }
+.metric b { font: 500 18px var(--mono); font-variant-numeric: tabular-nums }
+.metric span { font-size: 12px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase }
+.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px 16px; font-size: 13.5px; margin: 0 }
+.stats div { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px dashed var(--line); padding: 3px 0 }
+.stats dd { margin: 0; font: 500 13px var(--mono); font-variant-numeric: tabular-nums }
+.stats dt { color: var(--muted) }
+.alt { font-size: 14px; color: var(--muted) }
+.alt strong { color: var(--ink) }
+.tbl { overflow-x: auto }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; font-variant-numeric: tabular-nums }
+th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap }
+th:first-child, td:first-child { text-align: left }
+th { font-weight: 600; color: var(--muted); font-size: 12px; letter-spacing: .05em; text-transform: uppercase }
+td.pos { color: var(--good) } td.neg { color: var(--bad) }
+.example { font: 600 11px var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--bg); background: var(--muted); border-radius: 4px; padding: 2px 6px }
+.foot { color: var(--muted); font-size: 12.5px; max-width: 80ch }
+@media (prefers-reduced-motion: no-preference) { .slot { transition: border-color .2s } .slot:hover { border-color: var(--gold) } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>SMITE 2 <span>Build Forge</span></h1>
+      <p class="sub">Pick a god, the mode and who you are fighting. The forge tests every item combination against a level-20 teamfight and gives you the build in buy order.</p>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button id="tab-build" role="tab" aria-selected="true" aria-controls="view-build">Build</button>
+    <button id="tab-item" role="tab" aria-selected="false" aria-controls="view-item">Item check</button>
+  </nav>
+
+  <div class="bench">
+    <form class="panel" id="setup" autocomplete="off">
+      <h2>Your match</h2>
+      <label for="god">God
+        <input type="text" id="god" list="god-list" value="Xbalanque" required>
+      </label>
+      <label class="check" id="aspect-row" hidden><input type="checkbox" id="aspect"> <span id="aspect-name">Use aspect</span></label>
+      <div class="hint" id="aspect-info"></div>
+      <div>
+        <div class="hint" style="margin-bottom:4px">Mode</div>
+        <div class="seg" id="map" role="group" aria-label="Mode">
+          <button type="button" data-v="conquest" aria-pressed="true">Conquest</button>
+          <button type="button" data-v="joust" aria-pressed="false">Joust</button>
+          <button type="button" data-v="assault" aria-pressed="false">Assault</button>
+        </div>
+      </div>
+      <div class="row2">
+        <label for="role">Role
+          <select id="role"><option value="">God's main role</option><option>Solo</option><option>Jungle</option><option>Mid</option><option>Carry</option><option>Support</option></select>
+        </label>
+        <label for="mode">Style
+          <select id="mode">
+            <option value="auto">Auto</option><option value="burst">Burst</option><option value="dps">Sustained damage</option>
+            <option value="balanced">Bruiser / balanced</option><option value="tank">Full tank</option>
+          </select>
+        </label>
+      </div>
+      <label>Enemy gods <small>damage type and healers are read from them</small></label>
+      <div class="enemies">
+        <input type="text" id="e1" list="god-list" aria-label="Enemy 1" value="Loki">
+        <input type="text" id="e2" list="god-list" aria-label="Enemy 2" value="Aphrodite">
+        <input type="text" id="e3" list="god-list" aria-label="Enemy 3" value="Zeus">
+        <input type="text" id="e4" list="god-list" aria-label="Enemy 4">
+        <input type="text" id="e5" list="god-list" aria-label="Enemy 5">
+      </div>
+      <div class="chips" id="enemy-summary"></div>
+      <div class="row2">
+        <label for="target">Main target
+          <select id="target"><option value="">Mode default</option><option value="squishy">Squishies</option><option value="bruiser">Bruisers</option><option value="tank">Tanks</option></select>
+        </label>
+        <label for="stacks">Game state
+          <select id="stacks"><option value="even">Even</option><option value="behind">Behind</option><option value="ahead">Ahead (snowballing)</option></select>
+        </label>
+      </div>
+      <div class="row2">
+        <label for="mindef">Defensive items (at least)
+          <input type="number" id="mindef" min="0" max="6" value="0">
+        </label>
+        <label class="check" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="cc"> Lots of enemy CC</label>
+      </div>
+      <label for="own">Already bought or must include <small>press Enter to add</small>
+        <input type="text" id="own" list="item-list" placeholder="e.g. Gauntlet of Thebes">
+      </label>
+      <div class="chips" id="own-chips"></div>
+      <label for="ban">Never use
+        <input type="text" id="ban" list="item-list" placeholder="e.g. Avatar's Parashu">
+      </label>
+      <div class="chips" id="ban-chips"></div>
+      <div id="item-field" hidden>
+        <label for="item">Item to check
+          <input type="text" id="item" list="item-list" value="Qin's Blade">
+        </label>
+      </div>
+      <button class="go" id="go" type="submit">Forge build</button>
+      <div class="status" id="status" role="status">Loading the build engine in your browser (about 13 MB, first visit only)…</div>
+      <datalist id="god-list"></datalist>
+      <datalist id="item-list"></datalist>
+    </form>
+
+    <section class="panel" id="out" aria-live="polite"></section>
+  </div>
+
+  <p class="foot">Runs entirely in your browser with the same optimizer and data as the smite2-loadouts skill. Item, god and aspect data come from wiki.smite2.com (checked <span id="checked"></span>). Builds score a level-20 teamfight; early-game timing beyond buy order, and aspects other than modeled ones, are not in the numbers.</p>
+</div>
+
+<script>
+const META = {"gods": [{"name": "Achilles", "roles": ["Solo", "Jungle"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of Prowess", "aspect_model": false, "healer": false}, {"name": "Agni", "roles": ["Mid"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of Combustion", "aspect_model": false, "healer": false}, {"name": "Ah Puch", "roles": ["Mid"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of the Death March", "aspect_model": false, "healer": false}, {"name": "Aladdin", "roles": ["Jungle"], "damage_type": "magical", "range": "melee", "aspect": null, "aspect_model": false, "healer": false}, {"name": "Amaterasu", "roles": ["Solo"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of Valor", "aspect_model": false, "healer": false}, {"name": "Anhur", "roles": ["Carry"], "damage_type": "physical", "range": "ranged", "aspect": "Aspect of Pride", "aspect_model": false, "healer": false}, {"name": "Anubis", "roles": ["Mid"], "damage_type": "magical", "range": "ranged", "aspect": null, "aspect_model": false, "healer": false}, {"name": "Aphrodite", "roles": ["Mid", "Support"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of Heartbreak", "aspect_model": false, "healer": true}, {"name": "Apollo", "roles": ["Carry"], "damage_type": "physical", "range": "ranged", "aspect": "Aspect of Harmony", "aspect_model": false, "healer": false}, {"name": "Ares", "roles": ["Support"], "damage_type": "magical", "range": "melee", "aspect": "Aspect of Reverberation", "aspect_model": false, "healer": false}, {"name": "Artemis", "roles": ["Carry"], "damage_type": "physical", "range": "ranged", "aspect": "Aspect of the Wild", "aspect_model": false, "healer": false}, {"name": "Artio", "roles": ["Solo", "Support"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of the Denmother", "aspect_model": false, "healer": true}, {"name": "Athena", "roles": ["Support"], "damage_type": "magical", "range": "melee", "aspect": "Aspect of War", "aspect_model": false, "healer": false}, {"name": "Atlas", "roles": ["Support"], "damage_type": "magical", "range": "melee", "aspect": "Aspect of the Unburdened", "aspect_model": false, "healer": false}, {"name": "Awilix", "roles": ["Jungle"], "damage_type": "physical", "range": "melee", "aspect": null, "aspect_model": false, "healer": false}, {"name": "Bacchus", "roles": ["Support"], "damage_type": "magical", "range": "melee", "aspect": "Aspect of Revelry", "aspect_model": false, "healer": true}, {"name": "Baron Samedi", "roles": ["Mid", "Support"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of Hysteria", "aspect_model": false, "healer": true}, {"name": "Bastet", "roles": ["Jungle"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of the Watchful Pride", "aspect_model": false, "healer": false}, {"name": "Bellona", "roles": ["Solo"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of Vindication", "aspect_model": false, "healer": false}, {"name": "Cabrakan", "roles": ["Solo", "Support"], "damage_type": "magical", "range": "melee", "aspect": "Aspect of the Rotund Jotunn", "aspect_model": false, "healer": false}, {"name": "Cerberus", "roles": ["Solo", "Support"], "damage_type": "magical", "range": "melee", "aspect": "Aspect of Souls", "aspect_model": false, "healer": false}, {"name": "Cernunnos", "roles": ["Carry", "Jungle"], "damage_type": "physical", "range": "ranged", "aspect": "Aspect of Strife", "aspect_model": false, "healer": false}, {"name": "Chaac", "roles": ["Solo"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of Fulmination", "aspect_model": false, "healer": false}, {"name": "Charon", "roles": ["Support"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of the Tollkeeper", "aspect_model": false, "healer": false}, {"name": "Chiron", "roles": ["Carry"], "damage_type": "physical", "range": "ranged", "aspect": "Aspect of the Heroic Tutor", "aspect_model": false, "healer": false}, {"name": "Chronos", "roles": ["Mid", "Carry"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of Relativity", "aspect_model": false, "healer": false}, {"name": "Cu Chulainn", "roles": ["Solo"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of the Warped", "aspect_model": false, "healer": false}, {"name": "Cupid", "roles": ["Carry"], "damage_type": "physical", "range": "ranged", "aspect": "Aspect of Love", "aspect_model": false, "healer": false}, {"name": "Da Ji", "roles": ["Jungle"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of Ferocity", "aspect_model": false, "healer": false}, {"name": "Danzaburou", "roles": ["Carry"], "damage_type": "physical", "range": "ranged", "aspect": "Aspect of Fellowship", "aspect_model": false, "healer": false}, {"name": "Discordia", "roles": ["Mid"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of the Gilded Victor", "aspect_model": false, "healer": false}, {"name": "Eset", "roles": ["Mid"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of the Lifewarden", "aspect_model": false, "healer": false}, {"name": "Fenrir", "roles": ["Jungle"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of Loyalty", "aspect_model": false, "healer": false}, {"name": "Ganesha", "roles": ["Support"], "damage_type": "magical", "range": "melee", "aspect": "Aspect of the Triumphant", "aspect_model": false, "healer": false}, {"name": "Geb", "roles": ["Support", "Carry"], "damage_type": "magical", "range": "melee", "aspect": "Aspect of Calamity", "aspect_model": false, "healer": false}, {"name": "Gilgamesh", "roles": ["Solo", "Jungle"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of Shamash", "aspect_model": false, "healer": false}, {"name": "Guan Yu", "roles": ["Solo", "Support"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of the General", "aspect_model": false, "healer": true}, {"name": "Hachiman", "roles": ["Carry"], "damage_type": "physical", "range": "ranged", "aspect": "Aspect of the Steel Wind", "aspect_model": false, "healer": false}, {"name": "Hades", "roles": ["Solo"], "damage_type": "magical", "range": "ranged", "aspect": null, "aspect_model": false, "healer": false}, {"name": "Hecate", "roles": ["Mid"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of Ruin", "aspect_model": false, "healer": false}, {"name": "Hel", "roles": ["Mid", "Support"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of Divergence", "aspect_model": false, "healer": true}, {"name": "Hercules", "roles": ["Solo"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of Preservation", "aspect_model": false, "healer": false}, {"name": "Horus", "roles": ["Support", "Solo"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of the Falcon", "aspect_model": false, "healer": true}, {"name": "Hou Yi", "roles": ["Carry"], "damage_type": "physical", "range": "ranged", "aspect": "Aspect of the Mark", "aspect_model": false, "healer": false}, {"name": "Hua Mulan", "roles": ["Solo"], "damage_type": "physical", "range": "melee", "aspect": null, "aspect_model": false, "healer": false}, {"name": "Hun Batz", "roles": ["Jungle"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of Disruption", "aspect_model": false, "healer": false}, {"name": "Ishtar", "roles": ["Carry"], "damage_type": "physical", "range": "ranged", "aspect": "Aspect of the Passionate Storm", "aspect_model": false, "healer": false}, {"name": "Ix Chel", "roles": ["Mid", "Support"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of the Mother's Light", "aspect_model": false, "healer": true}, {"name": "Izanami", "roles": ["Carry"], "damage_type": "physical", "range": "ranged", "aspect": "Aspect of the Sickle", "aspect_model": false, "healer": false}, {"name": "Janus", "roles": ["Mid"], "damage_type": "magical", "range": "ranged", "aspect": null, "aspect_model": false, "healer": false}, {"name": "Jing Wei", "roles": ["Carry"], "damage_type": "physical", "range": "ranged", "aspect": null, "aspect_model": false, "healer": false}, {"name": "Jormungandr", "roles": ["Solo", "Support"], "damage_type": "magical", "range": "melee", "aspect": "Aspect of the Unyielding", "aspect_model": false, "healer": false}, {"name": "Kali", "roles": ["Jungle"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of Unbound Destruction", "aspect_model": true, "healer": true}, {"name": "Khepri", "roles": ["Support"], "damage_type": "magical", "range": "melee", "aspect": "Aspect of Laceration", "aspect_model": false, "healer": false}, {"name": "Kukulkan", "roles": ["Mid"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of the Squall", "aspect_model": false, "healer": false}, {"name": "Kuzenbo", "roles": ["Support"], "damage_type": "magical", "range": "melee", "aspect": "Aspect of Spirits", "aspect_model": false, "healer": false}, {"name": "Loki", "roles": ["Jungle"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of Agony", "aspect_model": false, "healer": false}, {"name": "Medusa", "roles": ["Carry"], "damage_type": "physical", "range": "ranged", "aspect": null, "aspect_model": false, "healer": false}, {"name": "Mercury", "roles": ["Jungle"], "damage_type": "physical", "range": "melee", "aspect": null, "aspect_model": false, "healer": false}, {"name": "Merlin", "roles": ["Mid"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of Pandemonium", "aspect_model": false, "healer": false}, {"name": "Mordred", "roles": ["Solo", "Jungle"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of Rage", "aspect_model": false, "healer": false}, {"name": "Morgan Le Fay", "roles": ["Mid"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of the Cursed Crown", "aspect_model": false, "healer": false}, {"name": "Ne Zha", "roles": ["Jungle"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of the Righteous Flame", "aspect_model": false, "healer": false}, {"name": "Neith", "roles": ["Carry", "Mid"], "damage_type": "physical", "range": "ranged", "aspect": "Aspect of Wind", "aspect_model": false, "healer": false}, {"name": "Nemesis", "roles": ["Jungle"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of Justice", "aspect_model": false, "healer": false}, {"name": "Nike", "roles": ["Solo"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of Victorious Conquest", "aspect_model": false, "healer": false}, {"name": "Nox", "roles": ["Mid"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of Silent Night", "aspect_model": false, "healer": false}, {"name": "Nu Wa", "roles": ["Mid"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of Shining Mist", "aspect_model": false, "healer": false}, {"name": "Nut", "roles": ["Carry", "Mid"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of the Cosmos", "aspect_model": false, "healer": false}, {"name": "Odin", "roles": ["Solo", "Jungle"], "damage_type": "physical", "range": "melee", "aspect": null, "aspect_model": false, "healer": false}, {"name": "Osiris", "roles": ["Solo"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of the Fragmented", "aspect_model": false, "healer": false}, {"name": "Pele", "roles": ["Jungle"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of Obsidian", "aspect_model": false, "healer": false}, {"name": "Poseidon", "roles": ["Mid"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of the Trident", "aspect_model": false, "healer": false}, {"name": "Princess Bari", "roles": ["Carry", "Mid"], "damage_type": "magical", "range": "ranged", "aspect": null, "aspect_model": false, "healer": true}, {"name": "Ra", "roles": ["Mid"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of Thermotherapy", "aspect_model": false, "healer": true}, {"name": "Rama", "roles": ["Carry"], "damage_type": "physical", "range": "ranged", "aspect": "Aspect of Precision", "aspect_model": false, "healer": false}, {"name": "Ratatoskr", "roles": ["Jungle"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of the Thickbark", "aspect_model": false, "healer": false}, {"name": "Ravana", "roles": ["Jungle"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of the Rakshasa King", "aspect_model": false, "healer": false}, {"name": "Scylla", "roles": ["Mid"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of the Devourer", "aspect_model": false, "healer": false}, {"name": "Sobek", "roles": ["Support"], "damage_type": "magical", "range": "melee", "aspect": "Aspect of Prey", "aspect_model": false, "healer": false}, {"name": "Sol", "roles": ["Mid", "Carry"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of Conflagration", "aspect_model": false, "healer": false}, {"name": "Sun Wukong", "roles": ["Solo"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of Transformation", "aspect_model": false, "healer": false}, {"name": "Susano", "roles": ["Jungle"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of the Storm Front", "aspect_model": false, "healer": false}, {"name": "Sylvanus", "roles": ["Support"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of Grover's Wrath", "aspect_model": false, "healer": true}, {"name": "Thanatos", "roles": ["Jungle"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of Reaping", "aspect_model": false, "healer": false}, {"name": "The Morrigan", "roles": ["Mid"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of Mischief", "aspect_model": false, "healer": false}, {"name": "Thor", "roles": ["Jungle", "Solo"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of Thunderstruck", "aspect_model": false, "healer": false}, {"name": "Tsukuyomi", "roles": ["Jungle"], "damage_type": "physical", "range": "melee", "aspect": "Aspect of Mangetsu", "aspect_model": false, "healer": false}, {"name": "Ullr", "roles": ["Carry"], "damage_type": "physical", "range": "ranged", "aspect": null, "aspect_model": false, "healer": false}, {"name": "Vulcan", "roles": ["Mid"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of Fortification", "aspect_model": false, "healer": false}, {"name": "Xbalanque", "roles": ["Carry"], "damage_type": "physical", "range": "ranged", "aspect": "Aspect of the Nightstalker", "aspect_model": false, "healer": false}, {"name": "Xing Tian", "roles": ["Support", "Solo"], "damage_type": "magical", "range": "melee", "aspect": "Aspect of Relentless Spite", "aspect_model": false, "healer": false}, {"name": "Yemoja", "roles": ["Support"], "damage_type": "magical", "range": "ranged", "aspect": "Aspect of Downpour", "aspect_model": false, "healer": true}, {"name": "Ymir", "roles": ["Support"], "damage_type": "magical", "range": "melee", "aspect": null, "aspect_model": false, "healer": false}, {"name": "Zeus", "roles": ["Mid"], "damage_type": "magical", "range": "ranged", "aspect": null, "aspect_model": false, "healer": false}], "items": ["Alchemist Coat", "Amanita Charm", "Ancient Signet", "Ancile", "Arondight", "Avatar's Parashu", "Avenging Blade", "Bancroft's Talon", "Barbed Carver", "Berserker's Shield", "Blood-Bound Book", "Bloodforge", "Book of Thoth", "Bracer of the Abyss", "Bragi's Harp", "Brawler's Beat Stick", "Breastplate of Valor", "Chandra's Grace", "Chronos' Pendant", "Circe's Hexstone", "Contagion", "Dagger of Frenzy", "Damaru", "Daybreak Gavel", "Death Metal", "Deathbringer", "Demon Blade", "Devourer's Gauntlet", "Divine Ruin", "Dominance", "Doom Orb", "Doublet of Binding", "Draconic Scale", "Dreamer's Idol", "Dwarven Plate", "Eros' Bow", "Erosion", "Ethereal Staff", "Eye of Erebus", "Eye of Providence", "Eye of the Storm", "Freya's Tears", "Gauntlet of Thebes", "Gem of Focus", "Gem of Isolation", "Genji's Guard", "Gladiator's Shield", "Glorious Pridwen", "Gluttonous Grimoire", "Golden Blade", "Hastened Fatalis", "Heartseeker", "Heartwood Charm", "Helm of Darkness", "Helm of Radiance", "Hide of the Nemean Lion", "Hussar's Wings", "Hydra's Lament", "Jade Scepter", "Jotunn's Revenge", "Kinetic Cuirass", "Lernaean Bow", "Leviathan's Hide", "Lifebinder", "Magi's Cloak", "Mantle of Discord", "Mercury's Talaria", "Midgardian Mail", "Musashi's Dual Swords", "Mystical Mail", "Necronomicon", "Nimble Ring", "Oath-Sworn Spear", "Obsidian Shard", "Odysseus' Bow", "Omen Drum", "Oni Hunter's Garb", "Pendulum Blade", "Pharaoh's Curse", "Phoenix Feather", "Polynomicon", "Prophetic Cloak", "Qin's Blade", "Radiant Bulwark", "Rage", "Ragnarok's Wake", "Regrowth Striders", "Resolute Mantle", "Riptalon", "Rod of Asclepius", "Rod of Tahuti", "Runeforged Hammer", "Sanguine Lash", "Scepter of Dominion", "Screeching Gargoyle", "Shield Splitter", "Shield of the Phoenix", "Shifter's Shield", "Shogun's Ofuda", "Shroud of Vengeance", "Silverbranch Bow", "Soul Gem", "Soul Locket", "Soul Reaver", "Spear of Desolation", "Spear of the Magus", "Spectral Armor", "Sphere of Negation", "Spirit Robe", "Staff of Myrddin", "Stampede", "Stone of Binding", "Stygian Anchor", "Sun Beam Bow", "Tekko-Kagi", "The Cosmic Horror", "The Crusher", "The Executioner", "The Reaper", "The World Stone", "Titan's Bane", "Totem of Death", "Toxic Blade", "Transcendence", "Triton's Conch", "Typhon's Heart", "Tyrfing", "Umbral Link", "Vital Amplifier", "Void Shield", "Void Stone", "Wish-Granting Pearl", "Wyrmskin Hide", "Xibalban Effigy", "Yogi's Necklace"], "starters": ["Archmage's Gem", "Blood-soaked Shroud", "Bluestone Brooch", "Bumba's Hammer", "Bumba's Spear", "Death's Embrace", "Heroism", "Hunter's Cowl", "Sharpshooter's Arrow", "Sundering Axe", "War Banner"], "data_checked": "2026-11-04"};
+const SAMPLE = {"god": "Xbalanque", "class": "Hunter", "role": "Carry", "mode": "dps", "map": "conquest", "aspect_text": "Aspect of the Nightstalker is not scored: this build is for the base kit.", "target": "bruiser", "enemy_physical": 0.33, "enemy_healing": true, "aspect": "Aspect of the Nightstalker. Builds are for the base kit; run `aspect Xbalanque` for what it changes.", "description": "Basic-attack carry: attack speed, crit and on-hit dominate.", "builds": [{"starter": "Sharpshooter's Arrow", "items": ["Toxic Blade", "Silverbranch Bow", "Riptalon", "Rage", "Deathbringer", "Avatar's Parashu"], "total_cost": 19200, "score": 8.176, "metrics": {"burst": 2748, "dps": 1229, "ehp": 4218, "burst_x_baseline": 5.55, "dps_x_baseline": 13.41, "ehp_x_baseline": 1.2}, "stats": {"strength": 212.062, "intelligence": 0.0, "attack_speed_total": 2.45, "crit_chance": 0.73, "penetration": 0.4, "cooldown_reduction": 0.0, "lifesteal": 0.075, "max_health": 2312.6, "max_mana": 1047.1, "physical_protection": 71.2, "magical_protection": 51.5, "plating": 0.0, "dampening": 0.0, "echo": 0.0}, "breakdown": {"target_protection_after_shred": 140.0, "mitigation_ability": 0.543, "mitigation_basic": 0.543, "crit_factor": 1.73, "ability_mult": 1.0, "basic_mult": 1.208, "basic_hit_raw": 459.3, "combo_raw": 848.9, "effective_rotation_cd": 12.0, "burst_parts": {"abilities": 461, "basics": 2287, "auras": 0}, "dps_parts": {"abilities": 38, "basics": 1190, "auras": 0}, "ehp_physical": 3959, "ehp_magical": 3504, "healing_per_sec": 95.7, "mana_ok": true, "utility_notes": []}, "contributions": [{"item": "Toxic Blade", "score_share": 0.324}, {"item": "Sharpshooter's Arrow", "score_share": 0.255}, {"item": "Avatar's Parashu", "score_share": 0.252}, {"item": "Deathbringer", "score_share": 0.245}, {"item": "Riptalon", "score_share": 0.243}, {"item": "Silverbranch Bow", "score_share": 0.24}, {"item": "Rage", "score_share": 0.217}], "snowball_items": ["Rage"], "scenarios": {"behind": {"score": 7.803, "burst": 2621, "dps": 1163, "ehp": 4188}, "even": {"score": 8.176, "burst": 2748, "dps": 1229, "ehp": 4218}, "ahead": {"score": 8.6, "burst": 2893, "dps": 1304, "ehp": 4252}}, "costs": {"Sharpshooter's Arrow": 2150, "Toxic Blade": 2700, "Silverbranch Bow": 2700, "Riptalon": 2700, "Rage": 2350, "Deathbringer": 2900, "Avatar's Parashu": 3700}, "stacking_first": [], "utility": ["antiheal", "gold_gain"]}], "relics": ["Aegis of Acceleration - 1.5s damage/healing immunity, can only move; +7% MS per god damage prevented (140s CD).", "Purification Beads - 2s crowd-control immunity (150s CD)."]};
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const GODS = Object.fromEntries(META.gods.map((g) => [g.name.toLowerCase(), g]));
+const ITEMS = new Set([...META.items, ...META.starters].map((n) => n.toLowerCase()));
+const canon = (list, v) => list.find((n) => n.toLowerCase() === String(v).trim().toLowerCase());
+$("god-list").innerHTML = META.gods.map((g) => `<option value="${esc(g.name)}">`).join("");
+$("item-list").innerHTML = [...META.starters, ...META.items].map((n) => `<option value="${esc(n)}">`).join("");
+$("checked").textContent = META.data_checked || "recently";
+
+const state = { map: "conquest", own: [], ban: [], view: "build" };
+const STAT_LABELS = { strength: "Strength", intelligence: "Intelligence", attack_speed_total: "Attack speed", crit_chance: "Crit chance",
+  penetration: "Penetration", cooldown_reduction: "Cooldown reduction", lifesteal: "Lifesteal", max_health: "Health",
+  max_mana: "Mana", physical_protection: "Physical prot", magical_protection: "Magical prot", plating: "Plating", dampening: "Dampening", echo: "Echo" };
+const PCT = new Set(["crit_chance", "penetration", "cooldown_reduction", "lifesteal"]);
+const fmtStat = (k, v) => PCT.has(k) ? Math.round(v * 100) + "%" : k === "attack_speed_total" ? v.toFixed(2) + "/s" : Math.round(v).toLocaleString();
+
+function saveForm() {
+  try { localStorage.setItem("forge-form", JSON.stringify({ ...payload(), view: state.view })); } catch (e) {}
+}
+function loadForm() {
+  try {
+    const f = JSON.parse(localStorage.getItem("forge-form") || "null");
+    if (!f) return;
+    $("god").value = f.god || $("god").value;
+    ["role", "mode", "target", "stacks"].forEach((k) => { if (f[k] != null) $(k).value = f[k]; });
+    $("mindef").value = f.min_defense ?? 0; $("cc").checked = !!f.enemy_cc_heavy; $("aspect").checked = !!f.aspect;
+    (f.enemies || []).forEach((n, i) => { if ($("e" + (i + 1))) $("e" + (i + 1)).value = n; });
+    for (let i = (f.enemies || []).length; i < 5; i++) $("e" + (i + 1)).value = "";
+    state.own = f.require || []; state.ban = f.exclude || []; if (f.item) $("item").value = f.item;
+    setMap(f.map || "conquest");
+  } catch (e) {}
+}
+
+function setMap(v) {
+  state.map = v;
+  document.querySelectorAll("#map button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === v)));
+}
+document.querySelectorAll("#map button").forEach((b) => b.addEventListener("click", () => setMap(b.dataset.v)));
+
+function enemies() {
+  return [1, 2, 3, 4, 5].map((i) => $("e" + i).value.trim()).filter(Boolean).map((n) => GODS[n.toLowerCase()]).filter(Boolean);
+}
+function renderEnemySummary() {
+  const es = enemies();
+  if (!es.length) { $("enemy-summary").innerHTML = `<span class="hint">No enemies entered: assumes a 50/50 damage mix.</span>`; return; }
+  const phys = es.filter((e) => e.damage_type === "physical").length;
+  const healers = es.filter((e) => e.healer).map((e) => e.name);
+  $("enemy-summary").innerHTML =
+    `<span class="chip"><span class="dt-phys">${Math.round(100 * phys / es.length)}% physical</span> · <span class="dt-mag">${Math.round(100 * (es.length - phys) / es.length)}% magical</span></span>` +
+    (healers.length ? `<span class="chip">Healers: ${esc(healers.join(", "))} → anti-heal</span>` : "");
+}
+[1, 2, 3, 4, 5].forEach((i) => $("e" + i).addEventListener("input", renderEnemySummary));
+
+function renderAspect() {
+  const g = GODS[$("god").value.trim().toLowerCase()];
+  $("aspect-row").hidden = !(g && g.aspect_model);
+  $("aspect-name").textContent = g && g.aspect ? "Play " + g.aspect : "Use aspect";
+  $("aspect-info").textContent = g ? (g.aspect ? (g.aspect_model ? "" : g.aspect + " is not scored yet: builds use the base kit.") : "This god has no aspect yet.") : "";
+}
+$("god").addEventListener("input", renderAspect);
+
+function chipList(key, box) {
+  $(box).innerHTML = state[key].map((n, i) => `<span class="chip">${esc(n)} <button type="button" aria-label="Remove ${esc(n)}" data-i="${i}">×</button></span>`).join("");
+  $(box).querySelectorAll("button").forEach((b) => b.addEventListener("click", () => { state[key].splice(+b.dataset.i, 1); chipList(key, box); }));
+}
+function chipInput(input, key, box) {
+  $(input).addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    const n = canon([...META.items, ...META.starters], $(input).value);
+    if (!n) { setStatus(`"${$(input).value}" is not an item. Pick one from the list.`, true); return; }
+    if (!state[key].includes(n)) state[key].push(n);
+    $(input).value = ""; chipList(key, box);
+  });
+}
+chipInput("own", "own", "own-chips"); chipInput("ban", "ban", "ban-chips");
+
+function payload() {
+  const starters = state.own.filter((n) => META.starters.includes(n));
+  return {
+    god: $("god").value.trim(), aspect: $("aspect").checked && !$("aspect-row").hidden, map: state.map,
+    role: $("role").value, mode: $("mode").value, target: $("target").value, stacks: $("stacks").value,
+    min_defense: +$("mindef").value || 0, enemy_cc_heavy: $("cc").checked,
+    enemies: [1, 2, 3, 4, 5].map((i) => $("e" + i).value.trim()).filter(Boolean),
+    require: state.own.filter((n) => !META.starters.includes(n)), starter: starters[0] || "",
+    exclude: state.ban, item: $("item").value.trim(), top: 2, beam: 50,
+  };
+}
+
+function setStatus(msg, err) { $("status").textContent = msg; $("status").classList.toggle("err", !!err); }
+
+function renderBuild(r, isExample) {
+  const b = r.builds[0];
+  const share = Object.fromEntries(b.contributions.map((c) => [c.item, c.score_share]));
+  const top = Math.max(...b.contributions.map((c) => c.score_share), 0.01);
+  const slot = (n, name, cls) => `<li class="slot ${cls || ""}"><span class="n">${n}</span>
+      <div><div class="name">${esc(name)}</div><div class="bar"><i style="width:${Math.max(4, 100 * (share[name] || 0) / top)}%"></i></div></div>
+      <span class="gold">${(b.costs[name] || 0).toLocaleString()}g</span></li>`;
+  const m = b.metrics;
+  const stats = Object.entries(STAT_LABELS).filter(([k]) => b.stats[k] || ["strength", "intelligence"].includes(k))
+    .map(([k, l]) => `<div><dt>${l}</dt><dd>${fmtStat(k, b.stats[k] || 0)}</dd></div>`).join("");
+  const alt = r.builds[1];
+  const sc = b.scenarios || {};
+  $("out").innerHTML = `
+    <div class="result-head">
+      <span class="tag">${isExample ? '<span class="example">Example</span> ' : ""}${esc(r.role)} · ${esc(r.map)} · ${esc(r.mode)}</span>
+      <h2>${esc(r.god)}</h2>
+      <div class="meta-line">vs ${esc(r.target)} targets · enemy damage <span class="dt-phys">${Math.round(r.enemy_physical * 100)}% physical</span>${r.enemy_healing ? " · healers" : ""}</div>
+      ${r.aspect_text ? `<div class="hint">${esc(r.aspect_text)}</div>` : ""}
+    </div>
+    <ol class="slots">
+      ${b.starter ? slot("START", b.starter, "starter") : ""}
+      ${b.items.map((n, i) => slot(i + 1, n)).join("")}
+    </ol>
+    <div class="meta-line">Total <b style="font-family:var(--mono)">${b.total_cost.toLocaleString()}g</b> · bar = how much the build loses without that item</div>
+    ${b.stacking_first.length ? `<div class="note">Buy ${esc(b.stacking_first.join(", "))} first: it stacks from farm and fights and evolves, so bought late it never finishes stacking.</div>` : ""}
+    <div class="metrics">
+      <div class="metric"><span>Burst</span><b>${m.burst.toLocaleString()}</b><span>${m.burst_x_baseline}× no items</span></div>
+      <div class="metric"><span>Damage / s</span><b>${m.dps.toLocaleString()}</b><span>${m.dps_x_baseline}× no items</span></div>
+      <div class="metric"><span>Effective HP</span><b>${m.ehp.toLocaleString()}</b><span>${m.ehp_x_baseline}× no items</span></div>
+      <div class="metric"><span>Score</span><b>${b.score.toFixed(2)}</b><span>higher is better</span></div>
+    </div>
+    <dl class="stats">${stats}</dl>
+    ${sc.behind ? `<div class="tbl"><table><thead><tr><th>If you are</th><th>Burst</th><th>Damage/s</th><th>Effective HP</th></tr></thead><tbody>
+      ${["behind", "even", "ahead"].map((k) => `<tr><td>${k}</td><td>${sc[k].burst.toLocaleString()}</td><td>${sc[k].dps.toLocaleString()}</td><td>${sc[k].ehp.toLocaleString()}</td></tr>`).join("")}
+    </tbody></table></div>` : ""}
+    ${alt ? `<div class="alt"><strong>Alternative</strong> (score ${alt.score.toFixed(2)}): ${esc([alt.starter, ...alt.items].filter(Boolean).join(" → "))}</div>` : ""}
+    ${r.relics.length ? `<div class="alt"><strong>Relic</strong>: ${esc(r.relics[0])}${r.relics[1] ? `<br><strong>Or</strong>: ${esc(r.relics[1])}` : ""}</div>` : ""}`;
+}
+
+function renderExplain(r) {
+  const rows = r.scenarios.map((s) => {
+    const td = (v) => `<td class="${v > 0.0005 ? "pos" : v < -0.0005 ? "neg" : ""}">${v > 0 ? "+" : ""}${(v * 100).toFixed(1)}%</td>`;
+    return `<tr><td>${esc(s.scenario)}</td>${td(s.score_vs_best_without)}${td(s.burst)}${td(s.dps)}${td(s.ehp)}</tr>`;
+  }).join("");
+  const others = r.scenarios.slice(1);
+  const best = others.reduce((a, b) => (b.score_vs_best_without > a.score_vs_best_without ? b : a));
+  const worst = others.reduce((a, b) => (b.score_vs_best_without < a.score_vs_best_without ? b : a));
+  $("out").innerHTML = `
+    <div class="result-head"><span class="tag">Item check</span><h2>${esc(r.item)} on ${esc(r.god)}</h2>
+      <div class="meta-line">${r.cost.toLocaleString()}g · ${esc(Object.entries(r.stats).map(([k, v]) => (v < 1 ? Math.round(v * 100) + "% " : v + " ") + k.replace(/_/g, " ")).join(", "))}</div></div>
+    <div class="note">${esc(r.passive || "No passive.")}</div>
+    ${r.stacking.map((s) => `<div class="alt"><strong>Stacking</strong>: ${esc(s)}</div>`).join("")}
+    ${r.utility.length ? `<div class="alt"><strong>Also does</strong>: ${esc(r.utility.join("; "))}</div>` : ""}
+    ${r.not_scored.length ? `<div class="alt"><strong>Not scored</strong>: ${esc(r.not_scored.join("; "))}</div>` : ""}
+    <div class="alt"><strong>${r.in_optimal_build ? "In" : "Not in"} the best build for this match.</strong> Strongest ${esc(best.scenario)} (${(best.score_vs_best_without * 100).toFixed(1)}%), weakest ${esc(worst.scenario)} (${(worst.score_vs_best_without * 100).toFixed(1)}%).</div>
+    <div class="tbl"><table><thead><tr><th>With it vs the best build without it</th><th>Score</th><th>Burst</th><th>Damage/s</th><th>Effective HP</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="alt"><strong>Best build with it</strong>: ${esc(r.build_with_item.join(" → "))}</div>
+    <div class="alt"><strong>Best build without it</strong>: ${esc(r.best_without_item.join(" → "))}</div>`;
+}
+
+// --- engine (Web Worker running Pyodide) ---
+let worker = null, seq = 0, engineReady = false;
+const pending = new Map();
+function call(fn, p) {
+  return new Promise((resolve, reject) => { const id = ++seq; pending.set(id, { resolve, reject }); worker.postMessage({ id, fn, payload: p }); });
+}
+function startEngine() {
+  try { worker = new Worker("worker.js"); } catch (e) { setStatus("This browser blocked the build engine: " + e.message, true); return; }
+  worker.onmessage = (e) => { const p = pending.get(e.data.id); if (!p) return; pending.delete(e.data.id); e.data.ok ? p.resolve(e.data.result) : p.reject(new Error(e.data.error)); };
+  worker.onerror = (e) => setStatus("The build engine failed to start: " + (e.message || "unknown error"), true);
+  call("warmup").then(() => { engineReady = true; $("go").disabled = false; setStatus("Engine ready. The example on the right is a real result; change the match and forge your own."); })
+    .catch((e) => setStatus("The build engine failed to start: " + e.message, true));
+}
+
+function showView(v) {
+  state.view = v;
+  $("tab-build").setAttribute("aria-selected", String(v === "build"));
+  $("tab-item").setAttribute("aria-selected", String(v === "item"));
+  $("item-field").hidden = v !== "item";
+  $("go").textContent = v === "build" ? "Forge build" : "Check item";
+}
+$("tab-build").addEventListener("click", () => showView("build"));
+$("tab-item").addEventListener("click", () => showView("item"));
+
+$("setup").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const p = payload();
+  if (!GODS[p.god.toLowerCase()]) { setStatus(`"${p.god}" is not a god in the list. Pick one from the suggestions.`, true); return; }
+  p.god = GODS[p.god.toLowerCase()].name;
+  const bad = p.enemies.find((n) => !GODS[n.toLowerCase()]);
+  if (bad) { setStatus(`Enemy "${bad}" is not a god in the list.`, true); return; }
+  if (state.view === "item" && !canon(META.items, p.item)) { setStatus(`"${p.item}" is not a tier-3 item. Pick one from the list.`, true); return; }
+  if (state.view === "item") p.item = canon(META.items, p.item);
+  if (!engineReady) { setStatus("Still loading the engine. One moment…"); return; }
+  saveForm();
+  $("go").disabled = true;
+  const t0 = performance.now();
+  const tick = setInterval(() => setStatus(`${state.view === "build" ? "Testing item combinations" : "Comparing builds in every matchup"}… ${((performance.now() - t0) / 1000).toFixed(0)}s`), 500);
+  try {
+    if (state.view === "build") renderBuild(await call("build", p), false);
+    else renderExplain(await call("explain", { ...p, beam: 35 }));
+    setStatus(`Done in ${((performance.now() - t0) / 1000).toFixed(1)}s.`);
+  } catch (err) {
+    setStatus(err.message, true);
+  } finally { clearInterval(tick); $("go").disabled = false; }
+});
+
+loadForm();
+chipList("own", "own-chips"); chipList("ban", "ban-chips");
+renderEnemySummary(); renderAspect(); showView(state.view === "item" ? "item" : "build");
+try { const f = JSON.parse(localStorage.getItem("forge-form") || "null"); if (f && f.view === "item") showView("item"); } catch (e) {}
+renderBuild(SAMPLE, true);
+$("go").disabled = true;
+startEngine();
+</script>
+
+</body>
+</html>
