@@ -8,7 +8,7 @@ A free build calculator for SMITE 2 that runs entirely in your browser.
   starter, six items, relic, and why each item is there.
 - **Item check** compares any item against the best alternative in every matchup (squishies vs tanks,
   physical vs magical enemies, healers, ahead vs behind).
-- Item, god and aspect data come from [wiki.smite2.com](https://wiki.smite2.com) and are refreshed after each patch.
+- Item, god and aspect data come from [wiki.smite2.com](https://wiki.smite2.com); builds are calibrated against what top-ranked players build ([SmiteBrain](https://smitebrain.com), Master+), including on each aspect.
 
 Nothing is installed and nothing is sent anywhere: the optimizer runs in your browser
 (Python via [Pyodide](https://pyodide.org)). There is no account, tracking or server.
