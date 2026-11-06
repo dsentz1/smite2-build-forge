@@ -21,7 +21,7 @@ self.onmessage = async (event) => {
       self.postMessage({ id, ok: true, result: null });
       return;
     }
-    if (!["build", "explain"].includes(fn)) throw new Error("Unknown request: " + fn);
+    if (!["build", "explain", "evaluate"].includes(fn)) throw new Error("Unknown request: " + fn);
     py.globals.set("payload_json", JSON.stringify(payload || {}));
     const out = py.runPython(`json.dumps(webapi.${fn}(json.loads(payload_json)))`);
     self.postMessage({ id, ok: true, result: JSON.parse(out) });
