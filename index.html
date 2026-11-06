@@ -172,7 +172,7 @@ td.pos { color: var(--good) } td.neg { color: var(--bad) }
           <select id="mode">
             <option value="auto">Auto (by role)</option>
             <optgroup label="Damage"><option value="burst">Ability burst</option><option value="dps">Attack speed / on-hit</option>
-              <option value="crit">Crit</option><option value="cooldown">Cooldown / ability spam</option><option value="echo">Echo</option></optgroup>
+              <option value="crit">Crit</option><option value="critls">Crit / lifesteal</option><option value="cooldown">Cooldown / ability spam</option><option value="echo">Echo</option></optgroup>
             <optgroup label="Sustain and defense"><option value="lifesteal">Lifesteal</option><option value="balanced">Bruiser / balanced</option>
               <option value="healer">Healer</option><option value="tank">Full tank</option></optgroup>
           </select>
@@ -202,7 +202,7 @@ td.pos { color: var(--good) } td.neg { color: var(--bad) }
         <label for="mindef">Defensive items (at least)
           <input type="number" id="mindef" min="0" max="6" value="0">
         </label>
-        <label class="check" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="cc"> Lots of enemy CC</label>
+        <label class="check" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="cc"> Counter CC</label>
       </div>
       <label for="own">Already bought or must include <small>press Enter to add</small>
         <input type="text" id="own" list="item-list" placeholder="e.g. Gauntlet of Thebes">
@@ -255,6 +255,7 @@ const KEY_WEIGHTS = { burst: "70% burst, 15% damage/s, 15% survival", dps: "15% 
   balanced: "split by role: mages 40/30/30, warriors and guardians 20/20/60", tank: "5% burst, 10% damage/s, 85% survival",
   lifesteal: "20% burst, 40% damage/s, 40% survival over a longer fight, plus a bonus for lifesteal",
   crit: "35% burst, 50% damage/s, 15% survival, plus a bonus for crit chance",
+  critls: "30% burst, 45% damage/s, 25% survival over a longer fight, plus bonuses for crit chance and lifesteal",
   cooldown: "45% burst, 35% damage/s, 20% survival, plus a bonus for cooldown reduction",
   healer: "10% burst, 15% damage/s, 75% survival, plus a bonus for healing items and Intelligence",
   echo: "55% burst, 30% damage/s, 15% survival, plus a bonus for Echo" };
